@@ -18,4 +18,13 @@ public class ArrayHelper {
         }
         return output;
     }
+
+    public static double[] concatenateArrays(double[] a, double[] b) {
+        double[] result = new double[a.length + b.length];
+
+        System.arraycopy(a, 0, result, 0, a.length);
+        System.arraycopy(b, 0, result, a.length, b.length);
+
+        return result;
+    }
 }

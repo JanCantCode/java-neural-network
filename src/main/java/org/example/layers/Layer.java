@@ -5,4 +5,6 @@ import org.example.nodes.Node;
 public interface Layer {
     public void setNodes(Node[] nodes);
     public Node[] getNodes();
+
+    public Layer clone();
 }

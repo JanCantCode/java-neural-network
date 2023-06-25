@@ -10,11 +10,13 @@ import java.util.Arrays;
 
 public class HiddenLayer implements Layer {
     private Node[] nodes;
+    private final int amountInPrevious;
 
     public HiddenLayer(Node[] nodes, int amountInPrevious) {
+        this.amountInPrevious = amountInPrevious;
         this.nodes = nodes;
         for (Node node : this.nodes) {
-            if (node instanceof HiddenNode hiddenNode) {
+            if (node instanceof HiddenNode hiddenNode && hiddenNode.getWeights() == null) {
                 hiddenNode.setWeights(ArrayHelper.fullRandom(amountInPrevious));
             } else if (node instanceof InputNode) {
                 node.setActivation(1.0); // Node is a bias neuron lol
@@ -31,6 +33,29 @@ public class HiddenLayer implements Layer {
         return this.nodes;
     }
 
+    public HiddenNode[] getHiddenNodes() {
+        int index = 0;
+        HiddenNode[] nodes = new HiddenNode[this.nodes.length];
+
+        for (Node node : this.nodes) {
+            if (node instanceof HiddenNode hiddenNode) {
+                nodes[index] = hiddenNode;
+                index++;
+            }
+        }
+
+        return nodes;
+    }
+
+    public double[] getActivations() {
+        double[] outputs = new double[this.nodes.length];
+        for (int i = 0; i < this.nodes.length; i++) {
+            outputs[i] = this.nodes[i].getActivation();
+        }
+
+        return outputs;
+    }
+
 
     public double[] feed(double[] inputs) {
         double[] output = new double[this.nodes.length];
@@ -45,6 +70,25 @@ public class HiddenLayer implements Layer {
                 output[i] = hiddenNode.getActivation();
             }
         }
+        return output;
+    }
+
+    public double[] feedOptimized(int index) {
+        double[] output = new double[this.nodes.length];
+
+        for (int i = 0; i < this.nodes.length; i++) {
+            Node currentNode = this.nodes[i];
+
+            if (currentNode instanceof HiddenNode hiddenNode) {
+                hiddenNode.feedOptimized(index);
+                output[i] = hiddenNode.getActivation();
+            }
+
+            if (currentNode instanceof InputNode inputNode) {
+                output[i] = inputNode.getActivation();
+            }
+        }
+
         return output;
     }
 
@@ -65,5 +109,29 @@ public class HiddenLayer implements Layer {
                 hiddenNode.adjustWeights(previousLayer, learningRate);
             }
         }
+    }
+
+    public void adjustOptimized(double learningRate, Layer previousLayer, int oneHot) {
+        for (Node node : this.nodes) {
+            if (node instanceof HiddenNode hiddenNode) {
+                hiddenNode.adjustOneHot(learningRate, previousLayer, oneHot);
+            }
+        }
+    }
+
+    public Node[] cloneNodes() {
+        Node[] nodes = new Node[this.nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            nodes[i] = this.nodes[i].clone();
+        }
+
+        return nodes;
+    }
+
+
+
+    public HiddenLayer clone() {
+        HiddenLayer layer = new HiddenLayer(this.cloneNodes(), this.amountInPrevious);
+        return layer;
     }
 }

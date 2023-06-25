@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class HiddenNode implements Node {
     private double activation;
     private double value;
-    private double[] weights;
+    public double[] weights;
     public double delta;
     private ActivationFunction activationFunction;
 
@@ -38,6 +38,11 @@ public class HiddenNode implements Node {
         }
 
         this.value = sum;
+        this.activation = this.activationFunction.calculate(this.value);
+    }
+
+    public void feedOptimized(int index) {
+        this.value = this.weights[index] * 1.0; // 1.0 is unnecessary but makes it more readable
         this.activation = this.activationFunction.calculate(this.value);
     }
 
@@ -93,6 +98,39 @@ public class HiddenNode implements Node {
                 this.weights[i] += deltaWeight;
             }
         }
+    }
 
+    public void addWeight(int index, double value) {
+        this.setWeight(index, this.weights[index] + value);
+    }
+
+    public void setWeight(int index, double value) {
+        this.weights[index] = value;
+    }
+
+    public void adjustOneHot(double learningRate, Layer previousLayer, int oneHotIndex) {
+        if (previousLayer instanceof HiddenLayer hiddenLayer) {
+            Node j = hiddenLayer.getNodes()[oneHotIndex];
+            double aj = j.getActivation();
+            double di = this.delta;
+            double deltaWeight = aj * di * learningRate;
+        }
+    }
+
+    public double[] cloneWeights() {
+        double[] newWeights = new double[this.weights.length];
+
+        for (int i = 0; i < this.weights.length; i++) {
+            newWeights[i] = this.weights[i];
+        }
+        return newWeights;
+    }
+
+    public HiddenNode clone() {
+        HiddenNode node = new HiddenNode(this.activationFunction);
+
+        node.setWeights(this.cloneWeights());
+        node.setActivation(this.activation);
+        return node;
     }
 }

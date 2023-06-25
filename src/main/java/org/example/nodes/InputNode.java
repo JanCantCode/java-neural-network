@@ -4,10 +4,12 @@ import org.example.activations.ActivationFunction;
 import org.example.layers.HiddenLayer;
 
 public class InputNode implements Node {
+    private final boolean isBias;
     private double activation;
     public double delta;
 
     public InputNode(boolean isBias) {
+        this.isBias = isBias;
         if (isBias) {
             this.activation = 1.0;
         }
@@ -40,4 +42,13 @@ public class InputNode implements Node {
         }
         this.delta = deltaSum;
     }
+
+    public InputNode clone() {
+        InputNode node = new InputNode(this.isBias);
+        node.setActivation(this.activation);
+
+        return node;
+    }
+
+
 }
